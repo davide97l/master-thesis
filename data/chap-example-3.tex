@@ -1,0 +1,69 @@
+% !TeX root = ../thuthesis-example.tex
+
+\chapter{MATHEMATICAL SYMBOLS AND FORMULA}
+
+\section{Symbols}
+
+As required by the national formatting standards, the template uses \pkg{unicode-math} for formatting mathematical symbols, which differs to the default used by LATEX. 
+
+\begin{enumerate}
+  \item Capital Greek letters are italic by default e.g. \cs{Delta}：$\Delta$。
+  \item Increment symbol: $\increment$（U+2206）
+  \item Vectors, matrices, tensors should be ITALIC, and BOLD using the \cs{symbf} command; for example: $\symbf{A}$, $\symbf{\alpha}$.
+  \item For constants and special functions, use the \cs{symup} command. For example:
+    $\symup{\pi} = 3.14\dots$; $\symup{e} = 2.718\dots$，
+  \item Example of integrals and differentials: $\int f(x) \dif x$。
+\end{enumerate}
+
+For more usage of symbols, you could use the following references
+\href{http://mirrors.ctan.org/macros/latex/contrib/unicode-math/unicode-math.pdf}{\pkg{unicode-math}}
+\href{http://mirrors.ctan.org/macros/latex/contrib/unicode-math/unimath-symbols.pdf}{\pkg{unimath-symbols}}.
+
+For units and metrics, it is recommended to use the following package:
+\href{http://mirrors.ctan.org/macros/latex/contrib/siunitx/siunitx.pdf}{\pkg{siunitx}}
+It can conveniently handle the space between Greek letters/numbers and the unit. For example:
+\SI{6.4e6}{m}，
+\SI{9}{\micro\meter}，
+\si{kg.m.s^{-1}}，
+\SIrange{10}{20}{\degreeCelsius}。
+
+
+
+\section{Mathematical formula}
+
+You can use the following environments \env{equation} 和 \env{equation*} for mathematical formulae.
+
+Please pay attention that round brackets should be included before and after referencing an equation: e.g. Equation \eqref{eq:example}.
+
+\begin{equation}
+  \frac{1}{2 \symup{\pi} \symup{i}} \int_\gamma f = \sum_{k=1}^m n(\gamma; a_k) \mathscr{R}(f; a_k)
+  \label{eq:example}
+\end{equation}
+
+When there are multiple equations, please try to align them at the "equal" sign if possible. We recommend using the \env{align} environment.
+For example:
+\begin{align}
+  a & = b + c + d + e \\
+    & = f + g
+\end{align}
+
+
+\section{Mathematical axioms and proofs}
+
+You can use \pkg{amsthm} or \pkg{ntheorem} packages to set up your axiom. After loading one of those package, the template will automatically setup the environments: \env{theorem} and \env{proof}
+
+An example:
+\begin{theorem}[Lindeberg--Lévy Central Limit Theorem]
+  Set random variables $X_1, X_2, \dots, X_n$ i.i.d., with expectation mean of $\mu$ and variance $\sigma^2 \ne 0$. By formula, $\bar{X}_n = \frac{1}{n} \sum_{i+1}^n X_i$, we have
+  \begin{equation}
+    \lim_{n \to \infty} P \left(\frac{\sqrt{n} \left( \bar{X}_n - \mu \right)}{\sigma} \le z \right) = \Phi(z),
+  \end{equation}
+  where $\Phi(z)$ is the function of a normal distribution.
+\end{theorem}
+\begin{proof}
+  Trivial.
+\end{proof}
+
+The template also provides the following environments: \env{assumption}、\env{definition}、\env{proposition}、
+\env{lemma}、\env{theorem}、\env{axiom}、\env{corollary}、\env{exercise}、
+\env{example}、\env{remar}、\env{problem}、\env{conjecture} 

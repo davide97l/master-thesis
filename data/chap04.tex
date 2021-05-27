@@ -1,0 +1,154 @@
+% !TeX root = ../thuthesis-example.tex
+
+% Input your chapter title here
+\chapter{ADVERSARIAL ATTACKS ON POLICIES}
+\label{sec:rla}
+
+This chapter explains in detail the policy attacks adopted in the experiments and defines their threat model. It gives an overview of both single and multi-agent attacks as well as possible defense methods.
+
+\section{Adversarial attacks on policies}
+As for adversarial attacks in other domains such as image or graph data, we can always define the properties of threat models, that is, a set of assumptions about the adversary’s goals, knowledge, and, in the reinforcement learning case, also the number of controllable agents interacting in the same environment. These conditions are specified by threat models so to determine under which conditions a defense is designed to be effective. Firstly, we can classify adversarial attacks on policies into two different categories based on the goal they are designed to achieve \cite{lin2017tactics}:
+\begin{itemize}
+    \item \textbf{Untargeted}: In the case of untargeted attacks, the goal is to decrease the performance of the victim agent, namely, causing it to take sub-optimal actions with respect to its learned policy so to reduce its total earned reward.
+    \item \textbf{Targeted}: Targeted attacks aim to control the agent by making it take a sequence of some predefined actions so to lure it to a particular state. This kind of attack is more difficult to achieve since causing the agent to take a malicious specific action and leading it to a specific state are two tasks whose solutions are not immediate.
+\end{itemize}
+Secondly, depending on the knowledge the attacker has about the model defining the agent's policy and the algorithm used, we can individuate other three categories of attacks \cite{s2017adversarial}:
+\begin{itemize}
+    \item \textbf{White-box}: full knowledge about environment, training algorithm, and network.
+    \item \textbf{Black-box I: Algorithm is known but not the policy}: the adversary has access to the training environment and knowledge of the training algorithm and hyperparameters. It also knows the neural network architecture of the target policy network, but not its random initialization. 
+    \item \textbf{Black-box II: Both algorithm and policy are not known}: under these settings, the adversary has no knowledge of the training algorithm or hyperparameters, but it only knows the environment. Hence, it may need to craft its attacks using a different algorithm. In practice, it is often the case that an adversary does not have complete access to the neural network of the target policy \cite{huang2017adversarial}.
+\end{itemize}
+Thirdly, we have another important distinction based on whether other controllable agents can interact in the same environment or not \cite{gleave2020adversarial}: 
+\begin{itemize}
+    \item \textbf{Single-agent}: In the environment is present only one agent that is not directly controllable, thus it can be only deceived by adding adversarial noise to the input observations it receives.
+    \item \textbf{Multi-agent}: In the same environment of the victim agent are also present other agents that can be controlled and trained to assume a particular behavior that could modify the environment such as to create observations that may deceive the victim.
+\end{itemize}
+In the next sections, we are first going to discuss the single-agent scenario and then we will briefly focus on the multi-agent one. All the reviewed attacks are summarized in table \ref{table:1}.
+
+\begin{table}
+  \centering
+  \caption{General overview of the attacks methods reviewed in this thesis and their corresponding categories.}
+  \begin{tabular}{ccc}
+    \toprule
+    Attack method & Goal & Scenario               \\
+    \midrule
+    Uniform Attack & Untargeted & Single-agent \\ 
+    Strategically-Timed Attack & Untargeted & Single-agent \\
+    Enchanting Attack & Targeted & Single-agent \\
+    Critical Point Attack & Untargeted & Single-agent\\
+    Critical Strategy Attack & Untargeted & Single-agent\\
+    Adversarial Policy & Untargeted & Single-agent/Multi-agent\\
+    \bottomrule
+  \end{tabular}
+  \label{table:1}
+\end{table}
+
+\subsection{Single-agent adversarial attacks}
+In the case of single-agent DRL scenarios, the only way the attacker has to fool the victim agent consists of adding small perturbations to the observations it receives as input. In fact, one of the most interesting features that made DRL agents so popular is that they are only fed with some observations of the environment in order to learn or exploit their policy. Commonly, these observations only consist of raw or pre-processed images composed of pixels, thus vulnerable to adversarial attacks targeting images.
+
+Following, we are going to introduce some of the most significant adversarial attacks under single-agent scenario. When it is required to make the victim agent choosing or avoiding a particular action, it can be used any method for adversarial attacks on images to craft adversarial observations, and sometimes, this procedure will be omitted without loss of generality.
+
+\subsection{Uniform attack}
+The first attack proposed to degrade the performance of DRL agents is the Uniform Attack \cite{s2017adversarial}, it falls into the family of untargeted attacks and consists of slightly perturbing all images the agent observes so to cause it choosing sub-optimal actions. Perturbations can be crafted with any existing method to attack image classification models under untargeted settings. This simple attack can be regarded as a direct extension of the adversarial attack on a CNN-based classification system since the adversarial example at each time step is computed independently of the adversarial examples at other time steps. However, it shows good results both in terms of transferability against algorithms and policies, in particular for large values of perturbations \(\epsilon\). However, despite being particularly effective against DQN, it doesn't scale well against more robust algorithms such as A2C and PPO.
+
+\subsection{Strategically-timed attack}
+Instead of attacking at every time step in an episode, Strategically-Timed attack \cite{lin2017tactics} selects a subset of time steps to attack the agent. Given the difficulty of the problem, the authors decided to subdivide it into two separate tasks: \textit{when to attack} and \textit{how to attack}. To solve the first task, it can be defined a function \(c\) that computes the preference of the agent in taking the most preferred action over the least preferred action at the current state \(s_t\). Hence, the \(c\) function can be defined as 
+\begin{equation}
+c(s_t)=max_{a_t}\pi(s_t,a_t)-min_{a_t}\pi(s_t,a_t).
+\end{equation}
+Then, the adversary attacks the victim agent at time step \(t\) when the relative action preference function \(c\) has a value greater than a threshold parameter \(\beta\). The intuition behind this is that when an agent strongly prefers a specific action, it means that it is critical to perform that action, otherwise the accumulated reward will be reduced. To solve the second task, it can be used any image adversarial attack method to change the preferred action of the agent from the originally most preferred one to the originally least preferred one. Finally, the authors of this attack found that, on average, the strategically-timed attack can reach the same effect of the uniform attack \cite{s2017adversarial} by attacking 25\% of the time steps in an episode. 
+
+\subsection{Enchanting attack}
+The goal of the Enchanting attack \cite{lin2017tactics} is to lead the DRL agent from current state \(s_t\) to a specified target state \(s_g\) after \(H\) steps. Also this attack is divided into two tasks: the first one consists of planning a sequence of actions for reaching the target state \(s_g\) from the current state \(s_t\). In the second one, it is crafted an adversarial example to lure the victim to take the first action of the planned action sequence using any image adversarial attack method. In particular, the first task is accomplished by training a video prediction model to predict a future state given a sequence of actions using a generative model. Since the goal of the enchanting attack is to reach the target state \(s_g\), the success of the attack is based on the distance between \(s_g\) and \(s_{t+H}\) predicted by the model. Regarding the action selection, are computed a sequence of actions using a sampling-based cross-entropy method, and is selected the sequence leading to a final state \(s_{t+H}\) which is the closest to \(s_g\). Based on evaluations on some Atari games, this method reaches an accuracy of about 70\% with a drop of performance on environments with a high level of stochasticity.
+
+\subsection{Critical point attack}
+In Critical Point Attack \cite{sun2020stealthy} the adversary builds a domain-specific model to predict the states of the next few steps, as well as the damage consequences of all possible attack strategies. As for many other attacks, also this method is performed in many stages. Firstly, the adversary uses observations of the target environment to train a prediction model \(P\) such that it takes a state-action pair as input and outputs a deterministic prediction of the next state. Then, it defines different strategies as sequences of \(N\) actions starting at step \(t\). In the third step, the adversary assesses the potential damage of all possible strategies from state \(t\) to \(t+M\) with \(M>=N\) and the last \(M-N\) steps following the normal policy. Next, the adversary calculates the value of the last state \(T(s_{t+M})\) using the function \(T\) which is a domain-specific divergence function defined as the least favorable state to reach. After computing \(T(s'_{t+M})\) for each attack strategy and the normal policy, the Danger Awareness Metric (DAM) between the two states, one reached because of a malicious policy and the other one following the normal policy is defined as
+\begin{equation}
+DAM=|T(s'_{t+M})-T(s_{t+M})|.
+\end{equation}
+If DAM is larger than a threshold \(\delta\), the adversary will conduct the attacks in the next \(N\) steps following the chosen strategy. Otherwise, it will do nothing and repeat this assessment process from the next step \(t + 1\). Overall, this method requires about 1 to 4 steps to significantly degrade the performance of the victim policy, which is a significant improvement over \cite{s2017adversarial} and \cite{lin2017tactics}.
+
+\subsection{Critical strategy attack}
+This attack doesn't formally exist in literature but it has been designed specifically to be included in this work. It borrows some concepts from Critical Point Attack with the difference that the divergence function \(T\) is not computed only over the final state \(s_{t+M}\) but over the whole sequence of states encountered from step \(t\) to step \(t+M\). To make this attack more environment-independent, we can define the divergence function of a strategy to be equal to the sum of the corresponding reward of each state encountered along the trajectory defined by a strategy:
+\begin{equation}
+T(s'_{t+M})=\sum_{i=0}^{M}R(s'_{t+i}, a'_{t+i}).
+\end{equation}
+Hence, the second difference with \cite{sun2020stealthy} is that in this method lower values of \(T\) show the presence of more critical states.
+Here the word {\it Strategy} is due to the fact that this method keeps track of the whole sequence of states rather than focusing only on the last one.
+The final algorithm is shown in algorithm \ref{algo:csa} and can be easily customized replacing \(T\) with other divergence functions. For both Critical Point Attack and Critical Strategy Attack, the number of planned strategies has a significant impact on the algorithm's speed. A simple way to generate them is to enumerate all possible combinations of \({a'_t,...,a'_{t+N-1}}\) but it is easy to realize that this solution is unfeasible for large values of \(N\). Hence, a possible solution consists of choosing a fraction of \(N\) such as \(N/S\), list all combinations of \(N/S\) actions, and then repeat each action \(S\) times. The intuition behind this method is that a policy, at least for the Atari environments, usually doesn't need to execute many different actions to be adversarial, thus we can discard those strategies that change actions too frequently. For example, in the environments of Pong where the goal is to let the ball bounce against the bar, not moving the bar at all is already a discrete adversarial strategy.
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwIn{$M$, $N$, $P$, $T$, $s_t$}
+\KwOut{optimal attack strategy \({a'_t,...,a'_{t+N-1}}\)}
+\tcc{Calculate the baseline \(T(s_{t+M})\)}
+\For{$i=0$ \KwTo $M-1$}{
+    $a_{t+i} \leftarrow AgentAct(s_{t+i})$\;
+    $s_{t+i+1} \leftarrow P(s_{t+i}, a_{t+i})$\;
+    $s_{t+i} \leftarrow s_{t+i+1}$\;
+}
+Plan for all possible N-step attack strategies as a set A\;
+$s'_t \leftarrow s_t$\;
+\For{each attack strategy $a'_t,...,a'_{t+N-1}$ \in $A$}{
+    $T_{s'+M} \leftarrow 0$\;
+    \For{$i=0$ \KwTo $M-1$}{
+        \eIf{$i\leq N$}{
+            $a_{t+i} \leftarrow a'_{t+i}$\;
+        }{
+            $a_{t+i} \leftarrow AgentAct(s'_{t+i})$\;
+        }
+        $s'_{t+i+1} \leftarrow P(s'_{t+i}, a_{t+i})$\;
+        $s'_{t+i} \leftarrow s'_{t+i+1}$\;
+        $T_{s'{t+M}} \leftarrow R(s'_{t+i}, a_{t+i}) + T_{s'{t+M}}$\;
+    }
+    \If{$|T(s'_{t+M})-T(s_{t+M})|>\Delta$}{
+        return $a'_t,...,a'_{t+N-1}$\;}
+}
+return $None$\;
+\caption{Critical Strategy Attack performed at step \(t\)}
+\label{algo:csa}
+\end{algorithm}
+
+\subsection{Adversarial policy}
+\label{sec:advpol}
+Adversarial Policy attack consists of solving a two-players Markov game \(M\), where the opponent \(\alpha\), controlled by the adversary, has to compete against the victim agent \(v\) in order to reduce its earned reward. Given that the victim policy \(\pi_v\) is held fixed, the game reduces to a single-player MDP \(M=(S,A_\alpha,T_\alpha,R_\alpha)\) the attacker has to solve. Thus, the goal of the attacker is to find an effective adversarial policy \(\pi_\alpha\) by maximizing the sum of its discounted rewards. To achieve this goal, the adversary can simply use any suitable algorithm to train a deep neural network where the adversary’s reward \(R_\alpha\) is set as the negative of the agent’s reward \(R_v\). The output is an adversarial policy that minimizes the reward on the target environment. Finally, it can be used any targeted attack on observations to let the target agent follow the adversarial policy and set a threshold parameter \(\beta\) like in \cite{lin2017tactics} to control the attack frequency.
+
+\section{Defense methods against single-agent adversarial attacks}
+Given that attacks under this setting partially rely on attacks on images, consequently the same defenses used to protect image classification models bring the same benefits also when protecting DRL agents. A wide range of defence techniques is thus available such as defensive distillation \cite{papernot2015distillation}, input transformation, certified defenses \cite{oikarinen2020robust} \cite{fischer2019online} \cite{zhang2020robust}, or simply performing adversarial training \cite{goodfellow2014explaining}. As proved by \cite{s2017adversarial}, also the robustness of the algorithm used to train the policy can improve the general robustness against adversarial examples.
+
+\subsection{DQN adversarial training}
+As mentioned before, adversarial training consists of augmenting the dataset with adversarial examples and retrain the model on it so to improve its robustness. In the context of DQN, the dataset is nothing else than the replay buffer from which the algorithm will sample past experiences. Thus, to train DQN with adversarial training it is used any image attack method to attack each observation and store the corresponding generated adversarial observation in the buffer. As for the other values, it is stored the original action corresponding to the non-adversarial observation along with the non-adversarial next observation and the normal reward so to store the tuple \((s^{adv}_t, a_t, r(a_t,s_t), s_{t+1})\). Since the goal is simply to let the network learn the right Q-value given an adversarial observation \(s^{adv}_t\), the corresponding observation \(s^_{t+1}\) doesn't need to be adversarial. Consequently, the loss function will be formulated according to the following formula:
+\begin{equation} \label{equation:advDQN}
+L_t(\theta_t)=(r_{t+1}+\gamma_{t+1}\max_{a'}Q_{\theta^{-}}(s_{t+1},a')-Q_{\theta_t}(s^{adv}_t,a_t))^2.
+\end{equation}
+In the implementation used in this work, adversarial training is applied on top of an already trained policy and perturbations are generated with untargeted attacks. The idea behind this mechanism is that the target network, which takes as input clear observations might supervise the online network so as to adjust its Q-values even in presence of adversarial observations.
+
+\subsection{A2C-PPO adversarial training}
+A little different is the way adversarial training works for the two on-policy algorithms. Given that the two algorithms learn in an on-policy way, they collect a few experiences during the normal exploration phase and immediately make use of them to learn and improve their policy. However, those experiences will be forgotten right after. To perform adversarial training, we first let the neural network take as input the clean observation \(s_t\) and output its corresponding action \(a_t\). Following, this action is used by any image adversarial attack to craft an adversarial observation \(s^{adv}_t\). The network is then fed with the adversarial observation so to produce an adversarial action \(a^{adv}_t\) and value \(v^{adv}_t\) which are used to estimate the advantage. The following formula shows the way to compute the gradients under adversarial training in the case of A2C and it can be easily generalized to other on-policy actor-critic algorithms such as PPO:
+\begin{equation} \label{equation:A2C_adv}
+\nabla_\theta=\log \pi(a^{adv}_t|s^{adv}_t;\theta_\pi)A(a^{adv}_t,s^{adv}_t;\theta_v),
+\end{equation}
+\begin{equation}
+A(a^{adv}_t,s^{adv}_t;\theta_v)=R_t-V(s^{adv}_t;\theta_v).
+\end{equation}
+However, in this way the network is being fed only with adversarial observations which may significantly degrade its performance on clean observations. To overcome this drawback, the network is trained with adversarial observations with probability \(p\) and clean ones with probability \(1-p\) with \(p\) for example equal to 0.5.
+
+\section{Multi-agent adversarial attacks}
+So far we have seen that an adversary can produce adversarial examples by perturbing some pixels on the input observations. However, in real scenarios, an attacker is not usually able to directly modify another agent’s observations \cite{gleave2020adversarial}. Nevertheless, under certain circumstances, an attacker can still control other agents interacting in the same environment of the victim agent so to create natural observation that results adversarial. To make it more clear, let's suppose that an agent is driving an autonomous car and its policy is based on observations of the surrounding environment. The way the autonomous system is designed, makes it impossible for an attacker to add adversarial noise directly to the frames the camera sends to the system. However, an agent could control another car or the behavior of a pedestrian so to create an adversarial observation and deceive the victim. To achieve this goal, an adversarial agent is usually trained with an adversarial policy with the aim to fool the victim agent in a targeted or untargeted way. Following, we are going to review in detail an example of a method attacking under multi-agents settings.
+
+\subsection{Multi-agent adversarial policy}
+We have already introduced adversarial policy attacks where their goal was to lower the rewards of the victim agent. However, since in this scenario we have two or more agents competing with each other, the goal of the attacker becomes to make the victim lose \cite{gleave2020adversarial}. Hence, given an opponent \(\alpha\) competing against the victim agent \(v\) with a fixed policy \(\pi_v\). The goal of the attacker is to find an effective adversarial policy \(\pi_\alpha\) by maximizing the sum of its discounted rewards:
+\begin{equation}
+\sum_{t=0}^{\infty}\gamma^t R_\alpha(s_t,a_{\alpha_t},a_{v_t},s_{t+1}),
+\end{equation}
+where \(s_{t+1}\sim T_\alpha(s_t,a_{\alpha_t},a_{v_t})\), and \(a_{\alpha_t}\sim\pi_\alpha(\cdot|s_t)\). The rewards are sparse and are given at the end of the episode depending on its outcome. More specifically, the adversary gets a positive reward when it wins the game and a negative reward when it loses or ties. Finally, the adversarial policy can be maximized with any DRL algorithm. Since the target policy is static, it can be viewed as part of the environment and the reward of the attacker to be maximized reduces to:
+\begin{equation}
+\sum_{t=0}^{\infty}\gamma^t R_\alpha(s_t,a_{\alpha_t},s_{t+1}),
+\end{equation}
+When evaluating this method on 1vs1 robotics simulator environments, the adversarial policies reliably win against the victims with an 86\% rate, but in contrast, they generate seemingly random and uncoordinated behavior. Moreover, the authors of this method also realized that the greater the dimensionality of the component of the observation space under control of the adversary, the more vulnerable the victim is to adversarial attacks.
+
+\subsection{Defense methods against multi-agent adversarial attacks}
+One intuitive strategy to protect DRL agents against adversarial policies is to fine-tune the victim against the adversary. In practice, this method works, but only protects against that particular adversary. In fact, by repeating the same attack \cite{gleave2020adversarial} against the re-trained agent, the adversary can learn a new policy to which the victim is vulnerable. However, repeating this procedure multiple times might provide protection against a wide range of adversaries. Another more interesting and effective defense mechanism consists of making the victim masked. Masking a victim agent means that the observation of the adversary’s position is set to a static value corresponding to a typical initial position. During evaluation, masked victims perform slightly worse than a normal victim when playing against normal opponents, but they reveal almost invincible when playing against adversarial agents. This result implies that non-transitive relationships may exist between policies even in games that apparently seem to be transitive. In the context of policies, transitivity means that higher-ranked policies beat lower-ranked policies \cite{gleave2020adversarial}.
+
+\section{Applying FGSM to policies}
+FGSM is a white-box attack, hence it requires calculating the gradient of the cost function \(\nabla_x L(x, y)\) with respect to the input observation \(x\) and the correct label \(y\). The output of a reinforcement learning policy is a probability distribution over all possible actions, thus we assume that the action \(a\) with the maximum weight in \(y\) is the optimal action to choose. We are sure that \(a\) is optimal since we are assuming that the policy has been well trained on its task. Thus, \(L(x, a)\) is the cross-entropy loss to be maximized to craft an adversarial observation under untargeted settings. It corresponds to the direction the gradient has to take so to decrease the value of the optimal action \(a\). Similarly, under targeted settings, the goal of the adversary is to increase the value of a specific action \(a^{adv}\) defined by a certain malicious policy. It can be achieved by minimizing the loss \(L(x, a^{adv})\) with respect to the desired action. The two algorithms A2C and PPO train stochastic policies, that is, it is immediate to get the probability of each action or their logits. However, DQN produces a deterministic policy since it always selects the action that maximizes the computed Q-value. This mechanism might cause some problems because it results in a gradient \(\nabla_x L(x, y)\) of zero for almost all observations \(x\) \cite{huang2017adversarial}. Thus, when calculating \(L(x, y)\) for policies trained with DQN, \(y\) is defined as the logits of computed Q-values to create adversarial observations.

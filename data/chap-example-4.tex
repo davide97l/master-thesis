@@ -1,0 +1,73 @@
+% !TeX root = ../thuthesis-example.tex
+
+\chapter{CITING YOUR REFERENCES}
+
+The template supports BibTex and BibLaTex to cite your references. Below is an example usage for BibTex with \pkg{natbib}:
+
+
+\section{Sequential numbering}
+
+Under the sequencing numbering system, the default \cs{cite} command is the same as \cs{citep}. The number will be included within the square brackets.
+
+Continual references will be automatically be replaced by a short dash.
+
+% Example citations
+\thusetup{
+  cite-style = super,
+}
+\begin{tabular}{l@{\quad$\Rightarrow$\quad}l}
+  \verb|\cite{zhangkun1994}|               & \cite{zhangkun1994}               \\
+  \verb|\citet{zhangkun1994}|              & \citet{zhangkun1994}              \\
+  \verb|\citep{zhangkun1994}|              & \citep{zhangkun1994}              \\
+  \verb|\cite[42]{zhangkun1994}|           & \cite[42]{zhangkun1994}           \\
+  \verb|\cite{zhangkun1994,zhukezhen1973}| & \cite{zhangkun1994,zhukezhen1973} \\
+\end{tabular}
+
+% Deprecated
+%Another type of reference style is given below, where the numbering is given within the text rather than a %superscript. 
+%***Please use a uniformed citation style throughout.
+
+%\thusetup{
+%  cite-style = inline,
+%}
+%\begin{tabular}{l@{\quad$\Rightarrow$\quad}l}
+%  \verb|\cite{zhangkun1994}|               & \cite{zhangkun1994}               \\
+%  \verb|\citet{zhangkun1994}|              & \citet{zhangkun1994}              \\
+%  \verb|\citep{zhangkun1994}|              & \citep{zhangkun1994}              \\
+%  \verb|\cite[42]{zhangkun1994}|           & \cite[42]{zhangkun1994}           \\
+%  \verb|\cite{zhangkun1994,zhukezhen1973}| & \cite{zhangkun1994,zhukezhen1973} \\
+%\end{tabular}
+
+
+
+\section{Author with year}
+
+Citing with authors' name and year, \cs{cite} and \cs{citet} are equivalent.
+
+\thusetup{
+  cite-style = author-year,
+}
+\begin{tabular}{l@{\quad$\Rightarrow$\quad}l}
+  \verb|\cite{zhangkun1994}|                & \cite{zhangkun1994}                \\
+  \verb|\citet{zhangkun1994}|               & \citet{zhangkun1994}               \\
+  \verb|\citep{zhangkun1994}|               & \citep{zhangkun1994}               \\
+  \verb|\cite[42]{zhangkun1994}|            & \cite[42]{zhangkun1994}            \\
+  \verb|\citep{zhangkun1994,zhukezhen1973}| & \citep{zhangkun1994,zhukezhen1973} \\
+\end{tabular}
+
+\vskip 2ex
+\thusetup{
+  cite-style = super,
+}
+Please note, all references should be cited within your main thesis.
+\cite{zhangkun1994,zhukezhen1973,dupont1974bone,zhengkaiqing1987,%
+  jiangxizhou1980,jianduju1994,merkt1995rotational,mellinger1996laser,%
+  bixon1996dynamics,mahui1995,carlson1981two,taylor1983scanning,%
+  taylor1981study,shimizu1983laser,atkinson1982experimental,%
+  kusch1975perturbations,guangxi1993,huosini1989guwu,wangfuzhi1865songlun,%
+  zhaoyaodong1998xinshidai,biaozhunhua2002tushu,chubanzhuanye2004,%
+  who1970factors,peebles2001probability,baishunong1998zhiwu,%
+  weinstein1974pathogenic,hanjiren1985lun,dizhi1936dizhi,%
+  tushuguan1957tushuguanxue,aaas1883science,fugang2000fengsha,%
+  xiaoyu2001chubanye,oclc2000about,scitor2000project%
+}.

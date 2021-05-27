@@ -1,0 +1,47 @@
+% !TeX root = ../thuthesis-example.tex
+
+% Input your chapter title here
+\chapter{DEEP REINFORCEMENT LEARNING}
+\label{sec:drl}
+
+This chapter first gives a brief overview of the theory behind reinforcement learning and then introduces the three deep learning algorithms used during the experiments carried out in this thesis work, namely DQN \cite{mnih2013playing}, A2C \cite{mnih2016asynchronous} and PPO \cite{schulman2017proximal}.
+
+\section{Deep reinforcement learning}
+Deep reinforcement learning (DRL) usually involves one or more agents interacting with an environment following a policy \(\pi\), like in a Markov Decision Process (MDP), where their goal is to improve their policy such to maximize their earned reward. More specifically, during training, the agent is provided with an observation \(s_t\) of the environment for each timestep \(t=0,1,2,...\), and it has to respond with an action \(a_{t}\). Afterwards, the environment provides a reward \(r(a_t,s_t)\), the next state \(s_{t+1}\), and a discount factor \(\gamma_t\). As regards to the selection of actions, they are selected according to a policy \(\pi\), modeled by a neural network with weights \(\theta\) that defines a probability distribution over the actions for each state. So, starting from state \(s_t\) encountered at time \textit{t}, we can define the discounted cumulative reward \(R_t\) as
+\begin{equation}
+R_t=\sum_{i=0}^{\infty}\gamma^{i}r_{t+i+1}.
+\end{equation}
+Thus, considering an episode starting at time \(t=0\) and terminating at time \(T\), the expected discounted reward of a policy \(\pi\) is defined as
+\begin{equation}
+R_0=\sum_{i=0}^{T-1}\mathbb{E}_{a_i\sim \pi(s_i)}[\gamma^i r(a_i,s_i)].
+\end{equation}
+Following, we are going to review in more details the three algorithms that have been employed to conduct this thesis work.
+
+
+\section{Deep Q-Network}
+Deep Q-network (DQN) \cite{mnih2013playing} is a neural network used to implement the Q-learning algorithm. More specifically, it learns an estimate of the Q-value \(Q(s,a,\theta)\) parameterized by the parameters \(\theta\) of the network (online network). The Q-value, which measures the value of choosing a particular action when in a particular state, can be defined according to the following recursive formula:
+\begin{equation} \label{equation:Qvalue}
+Q_{\theta_t}(s_{t},a_{t})=r_{t}+\gamma Q_{\theta_{t}} ((s_{t+1},a_{t+1})|s_{t},a_{t},\theta_{t}).
+\end{equation}
+Its architecture is composed of a first convolutional neural network (CNN) that takes as input a state \(s_t\) and learns to detect increasingly abstract features from it. Subsequently, a dense classifier maps the high-level extracted features to an output layer with one neuron per action in order to approximate the corresponding action value. The parameters of the network are trained by gradient descent to minimize the following loss function:
+\begin{equation} \label{equation:DQN}
+L_t(\theta_t)=(r_{t+1}+\gamma_{t+1}\max_{a'}Q_{\theta^{-}}(s_{t+1},a')-Q_{\theta_t}(s_t,a_t))^2.
+\end{equation}
+During training, a batch of experiences is randomly picked from the replay memory which is a sort of dataset storing the agent’s past experiences defined as the tuple \((s_t, a_t, r(a_t,s_t), s_{t+1})\). The experience replay technique prevents the network from learning from strongly correlated experiences that break the i.i.d. assumption of many popular stochastic gradient-based algorithms, as well as avoiding the rapid forgetting of possibly rare experiences that would be useful later on. Because of the experience replay, DQN is an off-policy algorithm since some sampled experiences might be explored with an older version of the online policy. The gradient of the loss is then back-propagated only into the parameters \(\theta\) of the online network which is used to select actions. The term \(\theta^-\) represents the parameters of a target network, a periodic copy of the online network which is not directly optimized and is used to estimate the maximum expected reward in equation (\ref{equation:DQN}). During training, the parameters of the online network are periodically copied into the ones of the target network so to update its weights. The advantage introduced by having an independent target network is to make the target Q-value independent with respect to the predicted Q-value when computing the loss so as to increase training stability. Overall, the Q-value calculated by the target network has more accuracy since it has access to at least the first reward term to calculate it. In order to encourage exploration, in particular during the early stage of training, greedy actions are taken with probability 1-\(\epsilon\) otherwise are performed random actions so to discover new policies that may lead to higher rewards.
+
+\section{Advantage actor-critic}
+Advantage Actor-Critic (A2C) \cite{mnih2016asynchronous} is formed by a neural network parameterized by \(\theta\) with 2 output layers: the first one is a softmax layer with weights \(\theta_\pi\) and outputs a policy \(\pi(a_t|s_t; \theta_\pi)\) (actor), the second one consists of a linear output for the value function \(V(s_t; \theta_v)\) (critic) parameterized by \(\theta_v\). Both the policy and the value function are periodically updated by gradient descent computing the gradient as
+\begin{equation} \label{equation:A2C}
+\nabla_\theta=\log \pi(a_t|s_t;\theta_\pi)A(a_t,s_t;\theta_v),
+\end{equation}
+\begin{equation} \label{equation:advantage}
+A(a_t,s_t;\theta_v)=R_t-V(s_t;\theta_v),
+\end{equation}
+where \(A(a_t,s_t;\theta_v)\) is an estimate of the advantage function which measures the relative importance of each action respect to the state \(s_t\). The formula to compute the gradient derives from the loss function which is simply the negative log likelihood of the predicted action multiplied by the advantage. It also exists an asynchronous version called A3C which relies on several asynchronous agents, each of them interacting with its own copy of the environment, that accumulate gradients and periodically send them to the global network to perform updates. Agents running in parallel, possibly using different exploration policies, are likely to explore different parts of the environment, thus increasing samples' diversity and decreasing their correlation. Other benefits brought by using asynchronous agents consist of a linear reduction of training time based on the number of parallel agents, and the absence of an experience replay. This method is on-policy since it sequentially learns over its observed states. Note that Actor-Critic doesn't have an explicit hyper-parameter to regulate its grade of exploration since it trains a stochastic policy where exploration is done by sampling actions according to the actions probabilities defined by the actor network. Over the course of training, the policy will learn to become progressively less random.
+
+\section{Proximal Policy Optimization}
+Proximal Policy Optimization (PPO) \cite{schulman2017proximal} is a model-free on-policy algorithm that aims to balance among ease of implementation, sample complexity, and ease of tuning. PPO tries to compute an update at each step that minimizes the cost function while ensuring that the deviation from the previous policy is relatively small:
+\begin{equation} \label{equation:PPO}
+L^{CLIP}(\theta)=\mathbb{E}_t[\min(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}A_t,clip(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)},1-\epsilon,1+\epsilon)A_t)],
+\end{equation}
+where the clipping operator prevents the maximization of the objective to lead to an excessively large policy update by constraining it in the interval \([1-\epsilon,1+\epsilon]\) and \(A_t\) is the advantage function computed as in equation (\ref{equation:advantage}). The architecture of the network involved in this algorithm is similar to A2C giving as output a distribution over actions and a value function used to compute the value of the advantage. Both functions are periodically updated after collecting a certain amount of trajectories. Moreover, PPO can run \(N\) parallel actors to collect the data, and then sample mini-batches of \(T\) timesteps to optimize the loss for \(K\) epochs using SGD.

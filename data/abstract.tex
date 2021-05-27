@@ -1,0 +1,26 @@
+% !TeX root = ../thuthesis-example.tex
+
+% 中英文摘要和关键字
+% Abstract in CHINESE
+% Requirements: 800-1000 CHINESE characters, it should not exceed 1 page maximum. You are allowed a maximum of 5 keywords in total
+\begin{abstract}
+现有文献已经广泛研究了针对深度学习模型的对抗攻击，并提出了几种防御方法来保护神经网络免受恶意对抗样本的攻击。然而，大多数工作主要集中在处理图像数据（例如，图像分类任务）的卷积神经网络上。近年来，由于卷积神经网络具有从原始像素提取重要图像特征的能力，这些模型还广泛应用于深度强化学习算法中。这些算法只需向模型提供像素观察值并据此预测特定的动作，即可从头开始学习策略。尽管如此，该领域的大多数研究都针对提升智能体性能，即最大程度地提高它们获得的收益。现有针对智能体鲁棒性的研究中，较少关注一类将其引向危险状态的对抗性攻击，这类攻击将减少智能体所获得的收益。本文首先研究了一些最常见的深度强化学习算法的鲁棒性。其次，分析了上述算法面对设计恶意策略的攻击的脆弱性。第三，研究了它们在策略和算法之间的可转移性。最后，研究了在防御机制存在的情况下，基于图像的攻击制定有效的对抗性观察的能力。本文提出，除针对策略攻击外，还应该针对图像攻击方法来评估策略的鲁棒性，因为某些图像攻击与特定的策略攻击结合可以更好地发挥作用。本文提出采用与受害方策略相同算法训练的替代策略进行的对抗性观察具有更好的可传递性，而且使用与替代策略算法相似的算法来训练替代策略时，可传递性更为有效。
+
+  % 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
+  % Input your keywords in CHINESE, separated by a "english comma" to ensure correct formatting. 
+  \thusetup{
+    keywords = {强化学习, 对抗决策, 对抗攻击, 鲁棒性},
+  }
+\end{abstract}
+
+% Corresponding abstract in English
+% Note that the keywords and the contents of the abstract should match with the CHINESE version
+\begin{abstract*}
+  Adversarial attacks against deep learning models have been widely studied in literature, and several defense methods have then been proposed to protect neural networks against malicious adversarial examples. However, most of the work is mainly focused on convolutional neural networks dealing with image data such as for image classification tasks. In recent years, thanks to their ability to extract important image features from raw pixels, those models have also found wide application in deep reinforcement learning algorithms which are able to learn a policy from scratch simply by feeding them with pixel observations and predict specific actions accordingly. Still, most of the research in this field is addressed on improving agents' performance in terms of maximizing their earned reward, while relatively little has been done to study their robustness against adversarial attacks that are able to mislead those policies toward dangerous states, thus reducing the obtained reward. In this thesis work, we first investigated the robustness of some of the most common deep reinforcement learning algorithms. Second, we showed their vulnerability against attacks that design malicious policies. Third, we studied their transferability propriety across policies and algorithms. Finally, we investigated the ability of image-based attacks to craft effective adversarial observations, even in presence of defense mechanisms. We hypothesize that policy robustness should be evaluated not only against policy attacks but also against image attack methods since some image attacks work better in combination with particular policy attacks. Moreover, we showed that adversarial observations crafted on surrogate policies trained with the same algorithm of the victim policy benefit of a better transferability, and we also empirically demonstrated that transferability is more effective when the surrogate policy is trained with an algorithm similar to the algorithm used to train the victim policy.
+
+
+  % Use comma as seperator when inputting
+  \thusetup{
+    keywords* = {Reinforcement learning, Adversarial policies, Adversarial attacks, Robustness},
+  }
+\end{abstract*}
